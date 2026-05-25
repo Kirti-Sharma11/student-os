@@ -14,6 +14,7 @@ import Register from "./pages/Auth/Register";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -47,7 +48,7 @@ function App() {
                         </ProtectedRoute>
                   }
                 />
-                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile" element={ <ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/placement" element={<Placement />} />
                     <Route path="/notes" element={<Notes />} />
                     <Route path="/analytics" element={<Analytics />} />
