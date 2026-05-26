@@ -32,6 +32,9 @@ const Profile = () => {
 
       setGithubData(res.data);
 
+      // SAVE USERNAME
+      localStorage.setItem("githubUsername", username);
+
     } catch (error) {
 
       console.log(error);
@@ -54,11 +57,10 @@ const Profile = () => {
 
       console.log("LEETCODE DATA:", res.data);
 
-      setLeetcodeData({
-        username: res.data.username,
-        avatar: res.data.avatar,
-        ranking: res.data.ranking,
-      });
+      setLeetcodeData(res.data);
+
+      // SAVE USERNAME
+      localStorage.setItem("leetcodeUsername", leetcodeUsername);
 
     } catch (error) {
 
@@ -85,6 +87,9 @@ const Profile = () => {
       setCodeforcesData(user);
 
       console.log("CODEFORCES DATA:", user);
+
+      // SAVE USERNAME
+      localStorage.setItem("codeforcesUsername", codeforcesUsername);
 
     } catch (error) {
 
@@ -322,16 +327,16 @@ const Profile = () => {
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
 
             <div className="bg-zinc-800 p-5 rounded-xl">
 
               <h2 className="text-zinc-400">
-                Ranking
+                Total Solved
               </h2>
 
               <p className="text-3xl font-bold mt-2">
-                {leetcodeData.ranking}
+                {leetcodeData?.submitStats?.acSubmissionNum[0]?.count || 0}
               </p>
 
             </div>
@@ -339,14 +344,50 @@ const Profile = () => {
             <div className="bg-zinc-800 p-5 rounded-xl">
 
               <h2 className="text-zinc-400">
-                Username
+                Easy
               </h2>
 
               <p className="text-3xl font-bold mt-2">
-                {leetcodeData.username}
+                {leetcodeData?.submitStats?.acSubmissionNum[1]?.count || 0}
               </p>
 
             </div>
+
+            <div className="bg-zinc-800 p-5 rounded-xl">
+
+              <h2 className="text-zinc-400">
+                Medium
+              </h2>
+
+              <p className="text-3xl font-bold mt-2">
+                {leetcodeData?.submitStats?.acSubmissionNum[2]?.count || 0}
+              </p>
+
+            </div>
+
+            <div className="bg-zinc-800 p-5 rounded-xl">
+
+              <h2 className="text-zinc-400">
+                Hard
+              </h2>
+
+              <p className="text-3xl font-bold mt-2">
+                {leetcodeData?.submitStats?.acSubmissionNum[3]?.count || 0}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="bg-zinc-800 p-5 rounded-xl mt-6">
+
+            <h2 className="text-zinc-400">
+              Ranking
+            </h2>
+
+            <p className="text-3xl font-bold mt-2">
+              {leetcodeData.ranking}
+            </p>
 
           </div>
 
@@ -376,7 +417,7 @@ const Profile = () => {
                 {codeforcesData.handle}
               </h1>
 
-              <p className="text-blue-400 mt-1">
+              <p className="text-blue-400 mt-1 capitalize">
                 {codeforcesData.rank}
               </p>
 
@@ -402,7 +443,7 @@ const Profile = () => {
               </h2>
 
               <p className="text-3xl font-bold mt-2">
-                {codeforcesData.rating}
+                {codeforcesData.rating || "Unrated"}
               </p>
 
             </div>
@@ -414,7 +455,7 @@ const Profile = () => {
               </h2>
 
               <p className="text-3xl font-bold mt-2">
-                {codeforcesData.maxRating}
+                {codeforcesData.maxRating || "N/A"}
               </p>
 
             </div>
@@ -425,8 +466,8 @@ const Profile = () => {
                 Max Rank
               </h2>
 
-              <p className="text-2xl font-bold mt-2">
-                {codeforcesData.maxRank}
+              <p className="text-2xl font-bold mt-2 capitalize">
+                {codeforcesData.maxRank || "N/A"}
               </p>
 
             </div>
