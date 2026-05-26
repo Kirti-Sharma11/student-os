@@ -5,6 +5,7 @@ import {
   FaBriefcase,
   FaStickyNote,
   FaChartBar,
+  FaClock,
 } from "react-icons/fa";
 
 const Sidebar = () => {
@@ -35,6 +36,11 @@ const Sidebar = () => {
         <Link to="/notes" className="flex items-center gap-3 hover:text-white transition">
           <FaStickyNote />
           Notes
+        </Link>
+
+        <Link to="/pomodoro" className="flex items-center gap-3 hover:text-white transition">
+          <FaClock />
+          Pomodoro
         </Link>
 
         <Link to="/analytics" className="flex items-center gap-3 hover:text-white transition">
