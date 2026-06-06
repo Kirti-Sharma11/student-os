@@ -8,6 +8,7 @@ import Profile from "./pages/Profile/Profile";
 import Placement from "./pages/Placement/Placement";
 import Notes from "./pages/Notes/Notes";
 import Analytics from "./pages/Analytics/Analytics";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer/ResumeAnalyzer";
 import Pomodoro from "./pages/Pomodoro/Pomodoro";
 
 import Login from "./pages/Auth/Login";
@@ -85,6 +86,11 @@ function App() {
                       <Route
                         path="/notes"
                         element={<Notes />}
+                      />
+
+                      <Route
+                        path="/resume"
+                        element={<ResumeAnalyzer />}
                       />
 
                       <Route
