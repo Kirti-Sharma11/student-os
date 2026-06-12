@@ -150,6 +150,13 @@ exports.analyze = async (req, res) => {
     );
     console.log("IMPROVEMENT SUGGESTIONS:", improvementSuggestions.length);
 
+    
+    const topSkills = (parsedData.skills || [])
+  .slice(0, 6)
+  .join(", ");
+
+const summary =
+  `${parsedData.name || "Candidate"} is a Computer Science student with expertise in ${topSkills}. Demonstrates strong problem-solving abilities, project development experience, and knowledge of modern software engineering practices.`;
     // Step 8: Build analysis response
     console.log("\n[Step 8] Building analysis response...");
     const analysis = {
@@ -166,7 +173,7 @@ exports.analyze = async (req, res) => {
       achievements: parsedData.achievements,
       skills: parsedData.skills || [],
       skillsByCategory: parsedData.skillsByCategory || {},
-      resumeSummary: extractedText.substring(0, 500),
+      resumeSummary: summary,
       strengths,
       weaknesses,
       missingSkills,

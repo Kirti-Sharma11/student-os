@@ -1,71 +1,287 @@
-// utils/pdfGenerator.js
 const path = require("path");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 
 function generatePDF(reportData) {
-  return new Promise((resolve) => {
+return new Promise((resolve, reject) => {
 
-    const outputPath = path.join(
-      __dirname,
-      "../../uploads",
-      `ATS_Report_${Date.now()}.pdf`
-    );
 
-    const doc = new PDFDocument();
+const outputPath = path.join(
+  __dirname,
+  "../../uploads",
+  `ATS_Report_${Date.now()}.pdf`
+);
 
-    const stream = fs.createWriteStream(outputPath);
-
-    doc.pipe(stream);
-
-    doc.fontSize(22).text("Resume Analysis Report", {
-      align: "center",
-    });
-
-    doc.moveDown();
-
-    doc.fontSize(14).text(`Name: ${reportData.name}`);
-    doc.text(`ATS Score: ${reportData.atsScore}/100`);
-
-    doc.moveDown();
-
-    doc.fontSize(16).text("Strengths");
-
-    reportData.strengths.forEach((item) => {
-      doc.fontSize(12).text(`• ${item}`);
-    });
-
-    doc.moveDown();
-
-    doc.fontSize(16).text("Weaknesses");
-
-    reportData.weaknesses.forEach((item) => {
-      doc.fontSize(12).text(`• ${item}`);
-    });
-
-    doc.moveDown();
-
-    doc.fontSize(16).text("Missing Skills");
-
-    reportData.missingSkills.forEach((item) => {
-      doc.fontSize(12).text(`• ${item}`);
-    });
-
-    doc.moveDown();
-
-    doc.fontSize(16).text("Suggestions");
-
-    reportData.suggestions.forEach((item) => {
-      doc.fontSize(12).text(`• ${item}`);
-    });
-    stream.on("finish", () => {
-  resolve(outputPath);
+const doc = new PDFDocument({
+  size: "A4",
+  margin: 50,
 });
 
-    doc.end();
+const stream = fs.createWriteStream(outputPath);
 
-    stream.on("finish", () => resolve(outputPath));
+doc.pipe(stream);
+
+// ==========================
+// HEADER
+// ==========================
+
+doc.rect(0, 0, doc.page.width, 90)
+   .fill("#2563EB");
+
+doc.fillColor("white")
+   .fontSize(26)
+   .font("Helvetica-Bold")
+   .text("Resume Analysis Report", 50, 35);
+
+doc.fillColor("black");
+doc.moveDown(3);
+
+// ==========================
+// ATS CARD
+// ==========================
+
+// ==========================
+// ATS CARD
+// ==========================
+
+const score = reportData.atsScore || 0;
+
+let scoreColor = "#EF4444";
+if (score >= 80) scoreColor = "#22C55E";
+else if (score >= 60) scoreColor = "#F59E0B";
+
+const cardY = 120;
+
+doc.roundedRect(50, cardY, 500, 110, 12)
+   .fillAndStroke("#F8FAFC", "#D1D5DB");
+
+// Candidate Name
+doc.fillColor("#111827")
+   .fontSize(16)
+   .font("Helvetica-Bold")
+   .text(
+      `Candidate: ${reportData.name || "Candidate"}`,
+      70,
+      cardY + 20
+   );
+
+// Subtitle
+doc.fillColor("#6B7280")
+   .fontSize(11)
+   .font("Helvetica")
+   .text(
+      "Resume Analysis & ATS Evaluation",
+      70,
+      cardY + 48
+   );
+
+// ATS Label
+doc.fillColor("#111827")
+   .fontSize(12)
+   .font("Helvetica-Bold")
+   .text(
+      "ATS Score",
+      380,
+      cardY + 20
+   );
+
+// Score Value
+doc.fillColor(scoreColor)
+   .fontSize(28)
+   .font("Helvetica-Bold")
+   .text(
+      `${score}%`,
+      410,
+      cardY + 42
+   );
+
+// Progress Bar Background
+doc.rect(380, 185, 120, 8)
+   .fill("#E5E7EB");
+
+// Progress Bar Fill
+doc.rect(
+   380,
+   185,
+   (score / 100) * 120,
+   8
+).fill(scoreColor);
+
+// Move cursor after card
+doc.y = cardY + 140;
+// ==========================
+// SUMMARY
+// ==========================
+// SUMMARY
+
+sectionTitle(doc, "Resume Summary", "#2563EB");
+
+const summaryText =
+  reportData.resumeSummary || "No summary available";
+
+const summaryHeight =
+  doc.heightOfString(summaryText, {
+      width: 470
+  }) + 35;
+
+const boxY = doc.y;
+
+doc.roundedRect(
+   50,
+   boxY,
+   500,
+   summaryHeight,
+   8
+).stroke("#E5E7EB");
+
+doc.fontSize(11)
+   .fillColor("black")
+   .font("Helvetica")
+   .text(
+      summaryText,
+      65,
+      boxY + 15,
+      {
+         width: 470
+      }
+   );
+
+doc.y = boxY + summaryHeight + 20;
+
+
+
+doc.moveDown(2);
+sectionTitle(doc, "Strengths", "#16A34A");
+
+(reportData.strengths || []).forEach(item => {
+  doc.fillColor("black")
+     .fontSize(11)
+     .text(`* ${item}`, {
+       width: 500,
+     });
+});
+
+doc.moveDown();
+
+// ==========================
+// STRENGTHS
+// ==========================
+
+function sectionTitle(doc, title, color) {
+
+  const y = doc.y;
+
+  doc.rect(50, y, 5, 22)
+     .fill(color);
+
+  doc.fillColor("#111827")
+     .fontSize(16)
+     .font("Helvetica-Bold")
+     .text(title, 65, y);
+
+  doc.moveDown(1);
+}
+doc.moveDown();
+
+// ==========================
+// WEAKNESSES
+// ==========================
+
+sectionTitle(doc, "Weaknesses", "#DC2626");
+
+(reportData.weaknesses || []).forEach(item => {
+  doc.fillColor("black")
+     .fontSize(11)
+     .text(`* ${item}`, {
+       width: 500,
+     });
+});
+
+doc.moveDown();
+
+// ==========================
+// MISSING SKILLS
+// ==========================
+
+sectionTitle(doc, "Missing Skills", "#F59E0B");
+
+doc.fontSize(11)
+   .fillColor("black")
+   .text((reportData.missingSkills || []).join("  •  "), {
+     width: 500,
+   });
+
+doc.moveDown();
+
+// ==========================
+// IMPROVEMENTS
+// ==========================
+
+sectionTitle(doc, "Improvement Suggestions", "#2563EB");
+
+(reportData.improvementSuggestions || []).forEach(item => {
+  doc.fontSize(11)
+  .text(`• ${item}`, {
+    width: 500,
   });
+});
+
+
+doc.moveDown();
+
+// ==========================
+// PROJECTS
+// ==========================
+
+sectionTitle(doc, "Recommended Projects", "#7C3AED");
+
+(reportData.suggestedProjects || []).forEach(item => {
+  doc.fontSize(11)
+  .text(`• ${item}`, {
+    width: 500,
+  });
+});
+
+
+
+doc.moveDown();
+
+// ==========================
+// KEYWORDS
+// ==========================
+
+sectionTitle(doc, "Suggested Keywords", "#0891B2");
+
+doc.fontSize(11)
+.text(
+  (reportData.suggestedKeywords || []).join(", "),
+  {
+    width: 500,
+  }
+);
+
+// ==========================
+// FOOTER
+// ==========================
+
+doc.moveDown(2);
+
+doc.fontSize(10)
+   .fillColor("gray")
+   .text(
+     "Generated by StudentOS Resume Analyzer",
+     {
+       align: "center",
+     }
+   );
+
+doc.end();
+
+stream.on("finish", () => resolve(outputPath));
+stream.on("error", reject);
+
+
+});
 }
 
 module.exports = generatePDF;
