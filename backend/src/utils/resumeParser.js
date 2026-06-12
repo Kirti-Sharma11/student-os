@@ -2,7 +2,14 @@
  * Comprehensive Resume Parser
  * Extracts all relevant information from resume text
  */
-
+function normalizeResumeText(text) {
+  return text
+    .replace(/PROJECTS/gi, "\nPROJECTS\n")
+    .replace(/EDUCATION/gi, "\nEDUCATION\n")
+    .replace(/TECHNICAL SKILLS/gi, "\nTECHNICAL SKILLS\n")
+    .replace(/EXPERIENCE/gi, "\nEXPERIENCE\n")
+    .replace(/CERTIFICATIONS/gi, "\nCERTIFICATIONS\n");
+}
 const TECH_SKILLS = {
   frontend: [
     "react",
@@ -205,37 +212,86 @@ function extractGitHub(text) {
   return matches.length > 0 ? matches[0] : null;
 }
 
-/**
- * Extract full name
- */
-function extractName(text) {
-  const lines = text.split("\n").slice(0, 5);
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.length > 0 && trimmed.length < 100) {
-      // Look for patterns with capital letters
-      const nameMatch = trimmed.match(
-        /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/
-      );
-      if (nameMatch) {
-        const name = nameMatch[1];
-        // Avoid section headers and common words
-        if (
-          !name.match(
-            /^(summary|contact|email|phone|skills|experience|education|projects|certifications)/i
-          ) &&
-          name.length > 2
-        ) {
-          return name;
-        }
-      }
-    }
+
+const extractName = (text) => {
+  const firstPart = text.substring(0, 300);
+
+  const allCapsMatch = firstPart.match(
+    /\b([A-Z]{2,}(?:\s+[A-Z]{2,}){1,3})\b/
+  );
+
+  if (allCapsMatch) {
+    return allCapsMatch[1].trim();
+  }
+
+  const normalMatch = firstPart.match(
+    /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b/
+  );
+
+  if (normalMatch) {
+    return normalMatch[1].trim();
   }
 
   return null;
-}
+};
+function detectStudent(text, education = []) {
+  const lowerText = text.toLowerCase();
 
+  const studentKeywords = [
+    "b.tech",
+    "bachelor",
+    "student",
+    "cgpa",
+    "class xii",
+    "class x",
+    "undergraduate",
+    "university",
+    "college",
+    "institute"
+  ];
+
+  let score = 0;
+
+  studentKeywords.forEach((keyword) => {
+    if (lowerText.includes(keyword)) {
+      score++;
+    }
+  });
+
+  if (education.length > 0) {
+    score += 2;
+  }
+
+  return score >= 3;
+}
+function getStudentYear(education) {
+  const text = Array.isArray(education)
+    ? education.join(" ")
+    : education;
+
+  const years = text.match(/20\d{2}/g);
+
+  if (!years) return null;
+
+  const admissionYear = Math.max(
+    ...years.map(Number).filter(y => y >= 2020)
+  );
+
+  const currentYear = new Date().getFullYear();
+
+  const year = currentYear - admissionYear + 1;
+
+  if (year < 1) return null;
+  if (year > 4) return "Graduate";
+
+  return {
+    1: "1st Year",
+    2: "2nd Year",
+    3: "3rd Year",
+    4: "4th Year"
+  }[year];
+}
 /**
  * Extract education
  */
@@ -409,40 +465,30 @@ function extractExperience(text) {
   return experience.length > 0 ? experience : [];
 }
 
-/**
- * Extract projects
- */
 function extractProjects(text) {
-  const lines = text.split("\n");
+  const projectSection = text.match(
+    /PROJECTS([\s\S]*?)(EXPERIENCE|WORK EXPERIENCE|ACHIEVEMENTS|POSITION OF RESPONSIBILITY|$)/i
+  );
+
+  if (!projectSection) return [];
+
+  const section = projectSection[1];
+
   const projects = [];
-  let inProjectSection = false;
 
-  for (const line of lines) {
-    const lowerLine = line.toLowerCase();
+  const matches = section.match(
+    /([A-Z][A-Za-z0-9\s&\-]{2,50})\s*\(GitHub\)/g
+  );
 
-    // Check for projects section
-    if (lowerLine.includes("project") && !lowerLine.includes("experience")) {
-      inProjectSection = true;
-      continue;
-    }
-
-    // Exit section
-    if (
-      inProjectSection &&
-      lowerLine.match(/^(experience|education|skills|certifications)/i)
-    ) {
-      inProjectSection = false;
-    }
-
-    // Extract project entries
-    if (inProjectSection && line.trim().length > 5) {
-      if (line.match(/^[A-Z]/) || line.match(/^-\s/)) {
-        projects.push(line.trim());
-      }
-    }
+  if (matches) {
+    matches.forEach(item => {
+      projects.push(
+        item.replace(/\(GitHub\)/i, "").trim()
+      );
+    });
   }
 
-  return projects.length > 0 ? projects : [];
+  return [...new Set(projects)];
 }
 
 /**
@@ -498,6 +544,7 @@ function extractCertificationsAndAchievements(text) {
  * Parse complete resume from text
  */
 function parseResume(text) {
+  text = normalizeResumeText(text);
   console.log("[Resume Parser] Starting comprehensive resume parsing...");
 
   if (!text || text.trim().length === 0) {
@@ -511,10 +558,19 @@ function parseResume(text) {
   const linkedin = extractLinkedIn(text);
   const github = extractGitHub(text);
   const education = extractEducation(text);
+  const isStudent = detectStudent(
+  text,
+  education
+);
+
+const studentYear =
+  getStudentYear(education);
   const skillsByCategory = extractSkills(text);
   const allSkills = getAllSkills(skillsByCategory);
   const experience = extractExperience(text);
   const projects = extractProjects(text);
+
+console.log("PROJECTS FOUND:", projects);
   const { certifications, achievements } =
     extractCertificationsAndAchievements(text);
 
@@ -528,6 +584,8 @@ function parseResume(text) {
     experience,
     projects,
     certifications,
+    isStudent,
+    studentYear,
     achievements,
     skills: allSkills,
     skillsByCategory,
@@ -541,7 +599,12 @@ function parseResume(text) {
     experience: experience.length,
     projects: projects.length,
   });
-
+  console.log({
+  projects: parsed.projects,
+  education: parsed.education,
+  isStudent: parsed.isStudent,
+  studentYear: parsed.studentYear,
+});
   return parsed;
 }
 

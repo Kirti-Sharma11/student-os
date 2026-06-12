@@ -91,7 +91,9 @@ const extractName = (text) => {
     }
     
     // Look for name patterns: at least 2 words, starting with capital letters
-    const nameMatch = cleanLine.match(/^([A-Z][a-z]+\s+(?:[A-Z][a-z]+\s+)*[A-Z][a-z]+)/);
+   const nameMatch = cleanLine.match(
+  /^([A-Z][A-Z\s]{2,40})$/
+);
     if (nameMatch) {
       return nameMatch[1].trim();
     }
@@ -103,37 +105,196 @@ const extractName = (text) => {
 /**
  * Extract education details
  */
-const extractEducation = (text) => {
-  const educationKeywords = ['bachelor', 'master', 'phd', 'degree', 'b.tech', 'm.tech', 'bca', 'mca', 'bse', 'mse', 'diploma', 'course'];
-  const education = [];
+/**
+ * Extract education with improved parsing for merged text, degree detection, and marks extraction
+ */
+function extractEducation(text) {
+  console.log("[extractEducation] Starting education extraction...");
+  
+  // Step 1: Preprocess text to split merged words
+  let processedText = text
+    // Split merged year with text: "Kurukshetra2024" -> "Kurukshetra 2024"
+    .replace(/([a-zA-Z])(\d{4})\b/g, "$1 $2")
+    // Split merged text with CGPA/GPA: "EngineeringCGPA" -> "Engineering CGPA"
+    .replace(/([a-z])([A-Z][A-Z])/g, "$1 $2")
+    // Split "Present" from merged: "2024Present" -> "2024 Present"
+    .replace(/(\d{4})(Present)/g, "$1 $2")
+    // Split year from marks: "2024Percentage" -> "2024 Percentage"
+    .replace(/(\d{4})([A-Z][a-z]+)/g, "$1 $2");
 
-  const lines = text.split('\n');
-  let inEducationSection = false;
+  console.log("[extractEducation] Text preprocessing completed");
+
+  // Step 2: Define all detection patterns
+  const degreePatterns = {
+    "b.tech": /\bb\.tech\b/gi,
+    "b.e": /\bb\.e\.?\b/gi,
+    bachelor: /\bbachelor\b/gi,
+    "m.tech": /\bm\.tech\b/gi,
+    "m.e": /\bm\.e\.?\b/gi,
+    master: /\bmaster\b/gi,
+    phd: /\bphd\b|\bph\.d\b/gi,
+    bca: /\bbca\b/gi,
+    mca: /\bmca\b/gi,
+    bsc: /\bbsc\b|\bb\.sc\b/gi,
+    msc: /\bmsc\b|\bm\.sc\b/gi,
+    diploma: /\bdiploma\b/gi,
+    associate: /\bassociate\b/gi,
+    "class xii": /\bclass\s+xii\b/gi,
+    "class x": /\bclass\s+x\b/gi,
+    "class ix": /\bclass\s+ix\b/gi,
+  };
+
+  const marksPatterns = {
+    cgpa: /cgpa:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/gi,
+    gpa: /gpa:\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/gi,
+    percentage: /percentage:\s*(\d+(?:\.\d+)?)\s*%?/gi,
+  };
+
+  const institutePatterns = [
+    /([A-Z][a-zA-Z\s&]+(?:Institute|University|College|School|Academy|polytechnic))/gi,
+    /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*(?:\s+(?:Institute|University|College|School|Academy)))/gi,
+  ];
+
+  const yearPattern = /\b(19\d{2}|20\d{2})\b/g;
+
+  // Step 3: Find education section boundaries
+  const lines = processedText.split("\n");
+  let educationStartIndex = -1;
+  let educationEndIndex = lines.length;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].toLowerCase();
-
-    if (line.includes('education')) {
-      inEducationSection = true;
-      continue;
+    const lowerLine = lines[i].toLowerCase();
+    if (lowerLine.includes("education") || lowerLine.includes("academic")) {
+      educationStartIndex = i + 1;
+      console.log(`[extractEducation] Found education section at line ${i}`);
     }
-
-    if (inEducationSection && line.match(/^(experience|skill|project|certification|award|achievement|internship)/)) {
-      inEducationSection = false;
-    }
-
-    if (inEducationSection) {
-      for (const keyword of educationKeywords) {
-        if (line.includes(keyword)) {
-          education.push(lines[i].trim());
-          break;
-        }
-      }
+    if (
+      educationStartIndex !== -1 &&
+      i > educationStartIndex &&
+      lowerLine.match(/^(experience|skills|projects|certifications|languages)/i)
+    ) {
+      educationEndIndex = i;
+      break;
     }
   }
 
-  return education;
-};
+  // Step 4: Extract education entries
+  const educationEntries = [];
+  const seenEntries = new Set(); // Track duplicates
+
+  // If no education section found, search entire text
+  const searchLines =
+    educationStartIndex > -1
+      ? lines.slice(educationStartIndex, educationEndIndex)
+      : lines;
+
+  console.log(
+    `[extractEducation] Searching ${searchLines.length} lines for education entries`
+  );
+
+  for (const line of searchLines) {
+    const trimmedLine = line.trim();
+    if (trimmedLine.length < 5) continue;
+
+    // Step 5: Check if line contains education keywords
+    let hasEducationKeyword = false;
+    let detectedDegree = null;
+
+    for (const [degreeType, pattern] of Object.entries(degreePatterns)) {
+      if (pattern.test(trimmedLine)) {
+        hasEducationKeyword = true;
+        detectedDegree = degreeType;
+        break;
+      }
+    }
+
+    if (!hasEducationKeyword) continue;
+
+    console.log(
+      `[extractEducation] Found education line with degree: ${detectedDegree}`
+    );
+
+    // Step 6: Extract components from line
+    let institute = "";
+    let degree = detectedDegree;
+    let marks = null;
+    let marksType = null;
+    let years = [];
+
+    // Extract institute name
+    for (const pattern of institutePatterns) {
+      const match = trimmedLine.match(pattern);
+      if (match) {
+        institute = match[0].trim();
+        break;
+      }
+    }
+
+    // If no institute pattern found, take first capitalized words
+    if (!institute) {
+      const wordMatch = trimmedLine.match(/^([A-Z][a-zA-Z\s]+?)(?=\d{4}|CGPA|GPA|Percentage|$)/);
+      if (wordMatch) {
+        institute = wordMatch[1].trim();
+      }
+    }
+
+    // Extract marks (CGPA, GPA, Percentage)
+    for (const [type, pattern] of Object.entries(marksPatterns)) {
+      const match = pattern.exec(trimmedLine);
+      if (match) {
+        marks = match[1];
+        marksType = type.toUpperCase();
+        console.log(
+          `[extractEducation] Extracted ${marksType}: ${marks}`
+        );
+        break;
+      }
+    }
+
+    // Extract years
+    const yearMatches = trimmedLine.match(yearPattern);
+    if (yearMatches) {
+      years = [...new Set(yearMatches)].sort();
+      console.log(`[extractEducation] Extracted years: ${years.join(", ")}`);
+    }
+
+    // Step 7: Build education object
+    const educationEntry = {
+      institute: institute || "Unknown Institute",
+      degree: degree,
+      marks: marks,
+      marksType: marksType,
+      duration:
+        years.length >= 2
+          ? `${years[0]} - ${years[years.length - 1]}`
+          : years.length === 1
+            ? years[0]
+            : "Unknown",
+      year: years[years.length - 1] || null,
+      rawText: trimmedLine,
+    };
+
+    // Step 8: Prevent duplicates
+    const duplicateKey = `${educationEntry.institute}|${educationEntry.degree}`;
+    if (!seenEntries.has(duplicateKey)) {
+      seenEntries.add(duplicateKey);
+      educationEntries.push(educationEntry);
+      console.log(
+        `[extractEducation] Added: ${educationEntry.institute} - ${educationEntry.degree}`
+      );
+    } else {
+      console.log(
+        `[extractEducation] Skipped duplicate: ${educationEntry.institute}`
+      );
+    }
+  }
+
+  console.log(
+    `[extractEducation] Extraction complete. Found ${educationEntries.length} entries`
+  );
+
+  return educationEntries;
+}
 
 /**
  * Extract experience/work history

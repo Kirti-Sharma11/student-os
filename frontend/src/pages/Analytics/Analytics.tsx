@@ -3,6 +3,7 @@ const Analytics = () => {
     <div className="text-white text-3xl font-bold">
       Analytics 📊
     </div>
+    
   );
 };
 

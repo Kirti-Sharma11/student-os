@@ -1,6 +1,8 @@
+const generatePDF = require("../utils/pdfGenerator");
 const fs = require("fs");
 const path = require("path");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
+
 
 // Import all utilities
 const { extractText } = require("../utils/textExtraction");
@@ -244,13 +246,14 @@ exports.analyze = async (req, res) => {
     console.log("═══════════════════════════════════════════════════════\n");
 
     return res.status(200).json({
-      success: true,
-      message: "Resume analyzed successfully",
-      analysis: {
-        ...analysis,
-        documentId: savedDoc?._id,
-      },
-    });
+  success: true,
+  message: "Resume analyzed successfully",
+  analysisId: savedDoc?._id,
+  analysis: {
+    ...analysis,
+    documentId: savedDoc?._id,
+  },
+});
   } catch (error) {
     console.error("\n❌ ERROR DURING ANALYSIS:", error.message);
     console.error("STACK:", error.stack);
@@ -340,6 +343,32 @@ exports.getUserAnalyses = async (req, res) => {
       success: false,
       message: "Failed to retrieve analyses",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+
+exports.downloadReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const analysis = await ResumeAnalysis.findById(id);
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    const pdfPath = await generatePDF(analysis);
+
+    return res.download(pdfPath, `ATS_Report_${analysis.name}.pdf`);
+  } catch (error) {
+    console.error("[Download Report] Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate PDF",
     });
   }
 };

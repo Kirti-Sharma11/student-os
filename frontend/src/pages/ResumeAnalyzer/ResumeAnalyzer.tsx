@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import API from "../../services/api";
 
 type Analysis = {
+   documentId?: string;
   atsScore?: number | null;
   strengths?: string[];
   weaknesses?: string[];
@@ -39,6 +40,7 @@ const ResumeAnalyzer = () => {
   };
 
   const handleAnalyze = async () => {
+    
     if (!file) return setError("Please upload a resume first");
     setLoading(true);
     setAnalysis(null);
@@ -55,10 +57,12 @@ const ResumeAnalyzer = () => {
           }
         },
       });
+     
 
       const raw = res.data?.analysis || res.data;
 
       const normalized: Analysis = {
+        documentId: raw?.documentId ?? raw?.document_id ?? null,
         atsScore: raw?.atsScore ?? raw?.ats_score ?? null,
         strengths: raw?.strengths ?? raw?.strengths ?? [],
         weaknesses: raw?.weaknesses ?? [],
@@ -77,6 +81,40 @@ const ResumeAnalyzer = () => {
       setLoading(false);
     }
   };
+  
+const downloadPDF = async () => {
+  if (!analysis) return;
+
+  try {
+    const response = await API.get(
+  `/resume/download/${analysis.documentId}`,
+  {
+    responseType: "blob",
+  }
+);
+
+    const url = window.URL.createObjectURL(
+      new Blob([response.data])
+    );
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "Resume-Analysis.pdf";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("PDF Download Failed", error);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-[#06070b] p-6 text-white">
@@ -118,7 +156,17 @@ const ResumeAnalyzer = () => {
           {loading && (
             <div className="mb-6 animate-pulse rounded-lg bg-zinc-900/50 p-6">Analyzing... please wait</div>
           )}
-
+          {analysis && (
+  <div className="mb-6 flex justify-end">
+  
+    <button
+      onClick={downloadPDF}
+      className="rounded-full bg-green-600 px-5 py-3 font-semibold text-white hover:bg-green-500"
+    >
+      Download PDF Report
+    </button>
+  </div>
+)}
           {analysis && (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <div className="rounded-2xl border border-white/6 bg-gradient-to-br from-white/3 to-transparent p-6">

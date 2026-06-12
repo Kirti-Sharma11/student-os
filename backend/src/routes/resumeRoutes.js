@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+
+const resumeController = require("../controllers/resumeController");
+
+
 const upload = require("../middleware/upload");
 const { rateLimit } = require("../middleware/rateLimit");
 const {
@@ -7,6 +11,7 @@ const {
   getAnalysis,
   getUserAnalyses,
   deleteAnalysis,
+   downloadReport,
 } = require("../controllers/resumeController");
 
 /**
@@ -15,7 +20,6 @@ const {
  * - Get/List: 30 requests per minute
  * - Delete: 10 requests per minute
  */
-
 // POST /api/resume/analyze - Analyze a new resume (rate limited)
 router.post(
   "/analyze",
@@ -61,4 +65,6 @@ router.delete(
   deleteAnalysis
 );
 
+
+router.get("/download/:id", downloadReport);
 module.exports = router;
