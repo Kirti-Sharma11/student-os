@@ -117,20 +117,21 @@ student-os/
 ## 📸 Screenshots
 
 ### Dashboard
+![Dashboard](./screenshots/dashboard.png)
 
-(Add Screenshot Here)
+### profile
+![Profile](./screenshots/profile.png)
 
 ### Resume Analyzer
-
-(Add Screenshot Here)
+![Resume Analyzer](./screenshots/resume-analyzer.png)
 
 ### Analytics Dashboard
 
-(Add Screenshot Here)
+![Analytics](./screenshots/analytics.png)
 
-### Generated PDF Report
+### PDF Report
 
-(Add Screenshot Here)
+![PDF Report](./screenshots/pdf-report.png)
 
 ---
 
