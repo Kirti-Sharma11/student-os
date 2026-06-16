@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -18,7 +18,7 @@ const resumeRoutes = require("./routes/resumeRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
-
+app.use("/api/analytics", analyticsRoutes);
 app.get("/", (req, res) => {
   res.send("Backend running...");
 });

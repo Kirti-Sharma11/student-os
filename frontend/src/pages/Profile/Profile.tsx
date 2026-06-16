@@ -244,7 +244,7 @@ const Profile = () => {
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
 
             <div className="bg-zinc-800 p-5 rounded-xl">
 
@@ -434,7 +434,7 @@ const Profile = () => {
 
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
 
             <div className="bg-zinc-800 p-5 rounded-xl">
 
