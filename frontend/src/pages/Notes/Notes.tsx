@@ -104,6 +104,10 @@ const Notes = () => {
               rows={6}
               className="min-h-[180px] w-full rounded-3xl border border-zinc-800/80 bg-zinc-950/90 px-4 py-3 text-white outline-none transition focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/20"
             />
+            
+            <p className="text-sm text-gray-400 mt-2">
+  {remainingChars} characters remaining
+</p>
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-zinc-400">

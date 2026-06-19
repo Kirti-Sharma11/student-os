@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
+import React from "react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -10,7 +11,9 @@ const Login = () => {
     password: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -26,7 +29,7 @@ const Login = () => {
       alert(res.data.message);
 
       navigate("/");
-    } catch (error) {
+    } catch (error:any) {
       alert(error.response.data.message);
     }
   };

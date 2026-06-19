@@ -11,7 +11,9 @@ const Register = () => {
     password: "",
   });
 
-  const handleChange = (e) => {
+ const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -25,7 +27,7 @@ const Register = () => {
       alert(res.data.message);
 
       navigate("/login");
-    } catch (error) {
+    } catch (error:any) {
       alert(error.response.data.message);
     }
   };
