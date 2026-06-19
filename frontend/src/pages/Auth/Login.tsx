@@ -2,6 +2,7 @@ import { useState } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -66,6 +67,16 @@ const Login = () => {
           >
             Login
           </button>
+
+          <p className="mt-4 text-center text-zinc-400">
+  Don't have an account?{" "}
+  <Link
+    to="/register"
+    className="text-white underline"
+  >
+    Register
+  </Link>
+</p>
 
         </div>
       </div>

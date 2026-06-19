@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -72,7 +73,15 @@ const Register = () => {
           >
             Register
           </button>
-          console.log(import.meta.env.VITE_API_URL);
+          <p className="mt-4 text-center text-zinc-400">
+  Already have an account?{" "}
+  <Link
+    to="/login"
+    className="text-white underline"
+  >
+    Login
+  </Link>
+</p>
         </div>
       </div>
     </div>
