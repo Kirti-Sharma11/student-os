@@ -72,7 +72,7 @@ const Register = () => {
           >
             Register
           </button>
-
+          console.log(import.meta.env.VITE_API_URL);
         </div>
       </div>
     </div>
