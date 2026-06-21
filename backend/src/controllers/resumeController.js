@@ -20,6 +20,7 @@ const {
  * Main resume analysis function
  */
 exports.analyze = async (req, res) => {
+  console.log("USER ID =", req.userId);
   let filePath = null;
 
   try {
@@ -206,8 +207,9 @@ const summary =
     let savedDoc = null;
 
     try {
+      console.log("SAVING WITH USER ID =", req.userId);
       savedDoc = await ResumeAnalysis.create({
-        userId: req.user?._id || null,
+          userId: req.userId,
         resumeFile: filename,
         name: analysis.name,
         email: analysis.email,
@@ -287,7 +289,9 @@ const summary =
 /**
  * Get analysis by ID
  */
+
 exports.getAnalysis = async (req, res) => {
+  console.log("ANALYZE USER =", req.userId);
   try {
     const { id } = req.params;
 

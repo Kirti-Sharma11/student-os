@@ -3,7 +3,9 @@ const router = express.Router();
 
 const resumeController = require("../controllers/resumeController");
 
-
+const authMiddleware =
+require("../middleware/authMiddleware");
+router.use(authMiddleware);
 const upload = require("../middleware/upload");
 const { rateLimit } = require("../middleware/rateLimit");
 const {
@@ -20,6 +22,7 @@ const {
  * - Get/List: 30 requests per minute
  * - Delete: 10 requests per minute
  */
+
 // POST /api/resume/analyze - Analyze a new resume (rate limited)
 router.post(
   "/analyze",

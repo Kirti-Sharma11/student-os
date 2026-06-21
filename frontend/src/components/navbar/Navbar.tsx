@@ -1,8 +1,12 @@
+const user = JSON.parse(
+  localStorage.getItem("user") || "{}"
+);
+
 const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-
+    localStorage.removeItem("user");
     window.location.href = "/login";
   };
 
@@ -16,7 +20,7 @@ const Navbar = () => {
       <div className="flex items-center gap-4">
 
         <div className="text-zinc-300">
-          Kirti 👋
+          {user.name} 👋
         </div>
 
         <button
