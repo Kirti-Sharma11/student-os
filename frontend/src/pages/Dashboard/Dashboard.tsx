@@ -98,11 +98,11 @@ const Dashboard = () => {
         />
 
         <StatsCard
-          title="LeetCode Solved"
-          value={
-            leetcodeData?.submitStats?.acSubmissionNum[0]?.count || 0
-          }
-        />
+  title="LeetCode Rank"
+  value={
+    leetcodeData?.ranking?.toLocaleString() || "N/A"
+  }
+/>
 
         <StatsCard
           title="Codeforces Rating"
