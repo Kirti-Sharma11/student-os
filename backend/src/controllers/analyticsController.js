@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 
 exports.getOverview = async (req, res) => {
@@ -5,14 +6,14 @@ exports.getOverview = async (req, res) => {
     console.log("REQ USER ID =", req.userId);
     const totalResumes =
       await ResumeAnalysis.countDocuments({
-        userId: req.userId
+      userId: new mongoose.Types.ObjectId(req.userId)
       });
 
     const avgATS =
       await ResumeAnalysis.aggregate([
         {
           $match: {
-            userId: req.userId
+          userId: new mongoose.Types.ObjectId(req.userId)
           }
         },
         {
@@ -27,7 +28,7 @@ exports.getOverview = async (req, res) => {
 
     const highestATSDoc =
       await ResumeAnalysis.findOne({
-        userId: req.userId
+       userId: new mongoose.Types.ObjectId(req.userId)
       }).sort({
         atsScore: -1
       });
@@ -36,7 +37,7 @@ exports.getOverview = async (req, res) => {
       await ResumeAnalysis.aggregate([
         {
           $match: {
-            userId: req.userId
+            userId: new mongoose.Types.ObjectId(req.userId)
           }
         },
         {
@@ -84,7 +85,7 @@ exports.getATSTrend = async (req, res) => {
 
     const data =
       await ResumeAnalysis.find({
-        userId: req.userId
+        userId: new mongoose.Types.ObjectId(req.userId)
       }).sort({
         createdAt: 1
       });
@@ -118,7 +119,7 @@ exports.getSkillsAnalytics = async (
       await ResumeAnalysis.aggregate([
         {
           $match: {
-            userId: req.userId
+            userId: new mongoose.Types.ObjectId(req.userId)
           }
         },
         {
@@ -161,7 +162,7 @@ exports.getMissingSkills = async (
       await ResumeAnalysis.aggregate([
         {
           $match: {
-            userId: req.userId
+            userId: new mongoose.Types.ObjectId(req.userId)
           }
         },
         {
