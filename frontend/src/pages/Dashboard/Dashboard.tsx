@@ -27,13 +27,13 @@ const Dashboard = () => {
 
         setOverview(analyticsRes.data);
 
-        // LeetCode
+        // LeetCode Solved Data
         if (leetcodeUsername) {
-          const lcRes = await axios.get(
-            `https://alfa-leetcode-api.onrender.com/${leetcodeUsername}`
+          const solvedRes = await axios.get(
+            `https://alfa-leetcode-api.onrender.com/${leetcodeUsername}/solved`
           );
 
-          setLeetcodeData(lcRes.data);
+          setLeetcodeData(solvedRes.data);
         }
 
         // GitHub
@@ -51,11 +51,8 @@ const Dashboard = () => {
             `https://codeforces.com/api/user.info?handles=${codeforcesUsername}`
           );
 
-          setCodeforcesData(
-            cfRes.data.result[0]
-          );
+          setCodeforcesData(cfRes.data.result[0]);
         }
-
       } catch (error) {
         console.log(error);
       }
@@ -67,7 +64,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#06070b] p-6 text-white">
 
-      {/* Hero */}
       <div className="mb-10">
         <h1 className="text-5xl font-bold">
           Welcome Back 👋
@@ -79,6 +75,7 @@ const Dashboard = () => {
       </div>
 
       {/* Top Stats */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
         <StatsCard
@@ -100,41 +97,31 @@ const Dashboard = () => {
 
         <StatsCard
           title="Top Skill"
-          value={
-            overview?.mostCommonSkill || "N/A"
-          }
+          value={overview?.mostCommonSkill || "N/A"}
         />
 
       </div>
 
       {/* Coding Profiles */}
+
       <div className="grid md:grid-cols-3 gap-6 mt-10">
 
         {/* GitHub */}
+
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <h2 className="text-2xl font-bold mb-4">
             🚀 GitHub
           </h2>
 
           <div className="space-y-3">
-            <p>
-              Repositories:{" "}
-              {githubData?.public_repos || 0}
-            </p>
-
-            <p>
-              Followers:{" "}
-              {githubData?.followers || 0}
-            </p>
-
-            <p>
-              Following:{" "}
-              {githubData?.following || 0}
-            </p>
+            <p>Repositories: {githubData?.public_repos || 0}</p>
+            <p>Followers: {githubData?.followers || 0}</p>
+            <p>Following: {githubData?.following || 0}</p>
           </div>
         </div>
 
         {/* LeetCode */}
+
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <h2 className="text-2xl font-bold mb-4">
             🏆 LeetCode
@@ -143,55 +130,57 @@ const Dashboard = () => {
           <div className="space-y-3">
 
             <p>
-              Rank:{" "}
-              {leetcodeData?.ranking
-                ? leetcodeData.ranking.toLocaleString()
-                : "N/A"}
+              Total Solved:{" "}
+              {leetcodeData?.solvedProblem || 0}
             </p>
 
             <p>
-              Solved:{" "}
-              {leetcodeData?.totalSolved ||
-                leetcodeData?.submitStats
-                  ?.acSubmissionNum?.[0]?.count ||
-                0}
+              Easy:{" "}
+              {leetcodeData?.easySolved || 0}
+            </p>
+
+            <p>
+              Medium:{" "}
+              {leetcodeData?.mediumSolved || 0}
+            </p>
+
+            <p>
+              Hard:{" "}
+              {leetcodeData?.hardSolved || 0}
             </p>
 
           </div>
         </div>
 
         {/* Codeforces */}
+
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <h2 className="text-2xl font-bold mb-4">
             ⚡ Codeforces
           </h2>
 
           <div className="space-y-3">
-
             <p>
               Rating:{" "}
-              {codeforcesData?.rating ||
-                "Unrated"}
+              {codeforcesData?.rating || "Unrated"}
             </p>
 
             <p>
               Rank:{" "}
-              {codeforcesData?.rank ||
-                "Unrated"}
+              {codeforcesData?.rank || "Unrated"}
             </p>
 
             <p>
               Max Rating:{" "}
-              {codeforcesData?.maxRating ||
-                "N/A"}
+              {codeforcesData?.maxRating || "N/A"}
             </p>
-
           </div>
         </div>
 
       </div>
 
       {/* Quick Overview */}
+
       <div className="mt-10 bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
 
         <h2 className="text-2xl font-bold mb-6">
@@ -216,10 +205,7 @@ const Dashboard = () => {
             </p>
 
             <p className="text-3xl font-bold mt-2">
-              {leetcodeData?.totalSolved ||
-                leetcodeData?.submitStats
-                  ?.acSubmissionNum?.[0]?.count ||
-                0}
+              {leetcodeData?.solvedProblem || 0}
             </p>
           </div>
 
@@ -229,12 +215,12 @@ const Dashboard = () => {
             </p>
 
             <p className="text-3xl font-bold mt-2">
-              {codeforcesData?.rating ||
-                "Unrated"}
+              {codeforcesData?.rating || "Unrated"}
             </p>
           </div>
 
         </div>
+
       </div>
 
     </div>

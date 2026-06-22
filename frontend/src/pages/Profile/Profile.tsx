@@ -12,6 +12,7 @@ const Profile = () => {
 
   const [leetcodeUsername, setLeetcodeUsername] = useState("");
   const [leetcodeData, setLeetcodeData] = useState<any>(null);
+  const [leetcodeSolved, setLeetcodeSolved] = useState<any>(null);
 
   const [codeforcesUsername, setCodeforcesUsername] = useState("");
   const [codeforcesData, setCodeforcesData] = useState<any>(null);
@@ -23,52 +24,56 @@ const Profile = () => {
   // =========================
 
   const fetchGithubProfile = async () => {
+  try {
 
-    try {
+    const res = await axios.get(
+      `https://api.github.com/users/${username}`
+    );
 
-      const res = await axios.get(
-        `https://api.github.com/users/${username}`
-      );
+    setGithubData(res.data);
 
-      setGithubData(res.data);
+    localStorage.setItem(
+      "githubUsername",
+      username
+    );
 
-      // SAVE USERNAME
-      localStorage.setItem("githubUsername", username);
+  } catch (error) {
 
-    } catch (error) {
+    console.log(error);
 
-      console.log(error);
+    alert("GitHub user not found");
+  }
+};
 
-      alert("GitHub user not found");
-    }
-  };
 
   // =========================
   // LEETCODE API
   // =========================
 
-  const fetchLeetcodeStats = async () => {
+ const fetchLeetcodeStats = async () => {
+  try {
 
-    try {
+    const profileRes = await axios.get(
+      `https://alfa-leetcode-api.onrender.com/${leetcodeUsername}`
+    );
 
-      const res = await axios.get(
-        `https://alfa-leetcode-api.onrender.com/${leetcodeUsername}`
-      );
+    const solvedRes = await axios.get(
+      `https://alfa-leetcode-api.onrender.com/${leetcodeUsername}/solved`
+    );
 
-      console.log("LEETCODE DATA:", res.data);
+    setLeetcodeData(profileRes.data);
+    setLeetcodeSolved(solvedRes.data);
 
-      setLeetcodeData(res.data);
+    localStorage.setItem(
+      "leetcodeUsername",
+      leetcodeUsername
+    );
 
-      // SAVE USERNAME
-      localStorage.setItem("leetcodeUsername", leetcodeUsername);
-
-    } catch (error) {
-
-      console.log(error);
-
-      alert("Failed to fetch LeetCode profile");
-    }
-  };
+  } catch (error) {
+    console.log(error);
+    alert("Failed to fetch LeetCode profile");
+  }
+};
 
   // =========================
   // CODEFORCES API
@@ -292,109 +297,110 @@ const Profile = () => {
       {/* LEETCODE CARD */}
       {/* ========================= */}
 
-      {leetcodeData && (
+    {leetcodeData && (
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-10">
+  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-10">
 
-          <div className="flex items-center gap-6">
+    <div className="flex items-center gap-6">
 
-            <img
-              src={leetcodeData.avatar}
-              alt="leetcode"
-              className="w-28 h-28 rounded-full border border-yellow-400"
-            />
+      <img
+        src={leetcodeData.avatar}
+        alt="leetcode"
+        className="w-28 h-28 rounded-full border border-yellow-400"
+      />
 
-            <div>
+      <div>
 
-              <h1 className="text-3xl font-bold">
-                {leetcodeData.username}
-              </h1>
+        <h1 className="text-3xl font-bold">
+          {leetcodeData.username}
+        </h1>
 
-              <p className="text-yellow-400 mt-1">
-                LeetCode Profile
-              </p>
+        <p className="text-yellow-400 mt-1">
+          LeetCode Profile
+        </p>
 
-              <a
-                href={`https://leetcode.com/${leetcodeData.username}/`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block mt-3 bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold"
-              >
-                View LeetCode
-              </a>
+        <a
+          href={`https://leetcode.com/${leetcodeData.username}/`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-block mt-3 bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold"
+        >
+          View LeetCode
+        </a>
 
-            </div>
+      </div>
 
-          </div>
+    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
 
-            <div className="bg-zinc-800 p-5 rounded-xl">
+      <div className="bg-zinc-800 p-5 rounded-xl">
 
-              <h2 className="text-zinc-400">
-                Total Solved
-              </h2>
+        <h2 className="text-zinc-400">
+          Total Solved
+        </h2>
 
-              <p className="text-3xl font-bold mt-2">
-                {leetcodeData?.submitStats?.acSubmissionNum[0]?.count || 0}
-              </p>
+        <p className="text-3xl font-bold mt-2">
+          {leetcodeSolved?.solvedProblem || 0}
+        </p>
 
-            </div>
+      </div>
 
-            <div className="bg-zinc-800 p-5 rounded-xl">
+      <div className="bg-zinc-800 p-5 rounded-xl">
 
-              <h2 className="text-zinc-400">
-                Easy
-              </h2>
+        <h2 className="text-zinc-400">
+          Easy
+        </h2>
 
-              <p className="text-3xl font-bold mt-2">
-                {leetcodeData?.submitStats?.acSubmissionNum[1]?.count || 0}
-              </p>
+        <p className="text-3xl font-bold mt-2">
+          {leetcodeSolved?.easySolved || 0}
+        </p>
 
-            </div>
+      </div>
 
-            <div className="bg-zinc-800 p-5 rounded-xl">
+      <div className="bg-zinc-800 p-5 rounded-xl">
 
-              <h2 className="text-zinc-400">
-                Medium
-              </h2>
+        <h2 className="text-zinc-400">
+          Medium
+        </h2>
 
-              <p className="text-3xl font-bold mt-2">
-                {leetcodeData?.submitStats?.acSubmissionNum[2]?.count || 0}
-              </p>
+        <p className="text-3xl font-bold mt-2">
+          {leetcodeSolved?.mediumSolved || 0}
+        </p>
 
-            </div>
+      </div>
 
-            <div className="bg-zinc-800 p-5 rounded-xl">
+      <div className="bg-zinc-800 p-5 rounded-xl">
 
-              <h2 className="text-zinc-400">
-                Hard
-              </h2>
+        <h2 className="text-zinc-400">
+          Hard
+        </h2>
 
-              <p className="text-3xl font-bold mt-2">
-                {leetcodeData?.submitStats?.acSubmissionNum[3]?.count || 0}
-              </p>
+        <p className="text-3xl font-bold mt-2">
+          {leetcodeSolved?.hardSolved || 0}
+        </p>
 
-            </div>
+      </div>
 
-          </div>
+    </div>
 
-          <div className="bg-zinc-800 p-5 rounded-xl mt-6">
+    <div className="bg-zinc-800 p-5 rounded-xl mt-6">
 
-            <h2 className="text-zinc-400">
-              Ranking
-            </h2>
+      <h2 className="text-zinc-400">
+        Ranking
+      </h2>
 
-            <p className="text-3xl font-bold mt-2">
-              {leetcodeData.ranking}
-            </p>
+      <p className="text-3xl font-bold mt-2">
+        {leetcodeData?.ranking
+          ? leetcodeData.ranking.toLocaleString()
+          : "N/A"}
+      </p>
 
-          </div>
+    </div>
 
-        </div>
+  </div>
 
-      )}
-
+)}
       {/* ========================= */}
       {/* CODEFORCES CARD */}
       {/* ========================= */}
