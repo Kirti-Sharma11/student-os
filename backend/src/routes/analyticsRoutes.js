@@ -6,7 +6,7 @@ require("../middleware/rateLimit");
 const analyticsController = require("../controllers/analyticsController");
 
 router.use(authMiddleware);
-router.use(rateLimit);
+router.use(rateLimit());
 router.get("/overview", (req,res,next)=>{
   console.log("ANALYTICS USER =", req.userId);
   next();
